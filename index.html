@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"
+    />
+    <title>For Henkii 🤍</title>
+
+    <style>
+      :root {
+        --bg: #fffafb;
+        --text: #5a4a4a;
+        --accent: #d4a3a3;
+        --yes: #f2e1e1;
+        --no: #fff;
+        --shadow: rgba(0, 0, 0, 0.05);
+        --shadow2: rgba(0, 0, 0, 0.08);
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Georgia, serif;
+        touch-action: manipulation;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+        overflow-x: hidden;
+        text-align: center;
+        padding: 20px 15px;
+      }
+
+      /* Lock */
+      #lock-screen {
+        position: fixed;
+        inset: 0;
+        background: var(--bg);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        transition: opacity 0.8s ease;
+      }
+      #passcode-input {
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid var(--accent);
+        text-align: center;
+        font-size: 2rem;
+        padding: 10px;
+        width: 160px;
+        outline: none;
+        letter-spacing: 8px;
+        color: var(--text);
+      }
+      #pin-subnote {
+        margin-top: 14px;
+        font-size: 0.9rem;
+        color: #b9a7a7;
+        font-style: italic;
+        opacity: 0;
+        transform: translateY(4px);
+        transition:
+          opacity 0.6s ease,
+          transform 0.6s ease;
+      }
+
+      /* Main */
+      #main-content {
+        display: none;
+        opacity: 0;
+        transition: opacity 1s ease;
+        max-width: 500px;
+        width: 100%;
+        padding-top: 50px;
+      }
+      .main-photo-frame {
+        width: 180px;
+        height: 180px;
+        margin: 0 auto 30px;
+        padding: 8px;
+        background: #fff;
+        box-shadow: 0 10px 30px var(--shadow);
+        transform: rotate(-2deg);
+      }
+      .main-photo-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      #dialogue-box {
+        height: 56px;
+        color: var(--accent);
+        font-style: italic;
+        margin-bottom: 20px;
+        padding: 0 15px;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.25s ease;
+        will-change: opacity;
+      }
+
+      /* Buttons */
+      .button-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        isolation: isolate; /* <-- key: stable stacking context */
+      }
+      button {
+        padding: 15px 30px;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+      #yes-btn {
+        background: var(--yes);
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+      }
+      #yes-btn.yes-glow {
+        box-shadow: 0 6px 22px rgba(212, 163, 163, 0.22);
+      }
+      #no-btn {
+        background: var(--no);
+        color: #bbb;
+        position: absolute;
+        z-index: 9999; /* <-- always above */
+        left: 70%;
+        top: 45%;
+        border: 1px solid #f0f0f0;
+        transition:
+          left 0.18s ease,
+          top 0.18s ease,
+          transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+          opacity 0.6s ease;
+        will-change: left, top, transform, opacity;
+      }
+      #no-btn.no-vanish {
+        opacity: 0;
+        transform: scale(0.25) rotate(-6deg);
+        pointer-events: none;
+      }
+
+      .micro-hint {
+        margin-top: 10px;
+        font-size: 0.85rem;
+        color: #b9a7a7;
+        font-style: italic;
+        opacity: 0.9;
+      }
+
+      /* Final */
+      #final-screen {
+        display: none;
+        opacity: 0;
+        width: 100%;
+        max-width: 1000px;
+        transition: opacity 1.5s ease-in-out;
+        padding: 20px 0;
+      }
+      .scrapbook-layout {
+        display: grid;
+        grid-template-columns: 200px 1fr 200px;
+        align-items: center;
+        gap: 20px;
+      }
+      .side-column {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+      }
+      .letter-card {
+        background: #fff;
+        padding: 40px;
+        border-radius: 2px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+        line-height: 2.1;
+        font-size: 1.1rem;
+        font-style: italic;
+        border-left: 4px solid var(--yes);
+        text-align: left;
+        position: relative;
+      }
+      .greeting {
+        display: block;
+        margin-bottom: 15px;
+        font-family: "Brush Script MT", cursive;
+        font-size: 2.2rem;
+        color: var(--accent);
+      }
+      .signature {
+        display: block;
+        margin-top: 25px;
+        font-family: "Brush Script MT", cursive;
+        font-size: 1.8rem;
+        color: var(--accent);
+        text-align: right;
+      }
+      #counter-container {
+        margin-top: 15px;
+        font-size: 0.75rem;
+        color: #aaa;
+        text-align: right;
+        font-style: normal;
+        letter-spacing: 0.5px;
+        line-height: 1.4;
+      }
+      #live-counter {
+        display: block;
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .polaroid {
+        background: #fff;
+        padding: 10px 10px 15px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+        width: 100%;
+      }
+      .polaroid img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+      }
+      @media (max-width: 900px) {
+        .scrapbook-layout {
+          grid-template-columns: 1fr;
+        }
+        .side-column {
+          flex-direction: row;
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+        .polaroid {
+          width: 45%;
+          max-width: 180px;
+        }
+        .letter-card {
+          padding: 25px;
+          margin: 10px 0;
+          font-size: 1rem;
+          order: -1;
+        }
+      }
+      .tl {
+        transform: rotate(-3deg);
+      }
+      .bl {
+        transform: rotate(2deg);
+      }
+      .tr {
+        transform: rotate(3deg);
+      }
+      .br {
+        transform: rotate(-2deg);
+      }
+
+      #music-control {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #fff;
+        padding: 10px;
+        border-radius: 50%;
+        box-shadow: 0 4px 10px var(--shadow);
+        cursor: pointer;
+        z-index: 2000;
+        display: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+    </style>
+  </head>
+
+  <body>
+    <audio id="bg-music" loop>
+      <source src="book-boyfriends.mp3" type="audio/mpeg" />
+    </audio>
+    <div id="music-control" onclick="toggleMusic()" title="Music">🎵</div>
+
+    <div id="lock-screen">
+      <p
+        style="
+          margin-bottom: 20px;
+          font-style: italic;
+          color: #888;
+          padding: 0 20px;
+        "
+      >
+        The memory of the day it began in Pune... (DDMM) 🤍
+      </p>
+      <input
+        type="text"
+        inputmode="numeric"
+        id="passcode-input"
+        placeholder="----"
+        maxlength="4"
+        autocomplete="off"
+      />
+      <div id="pin-subnote">Thanks to you, me addicted to this song..</div>
+    </div>
+
+    <div id="main-content">
+      <div class="main-photo-frame"><img src="home.jpg" alt="Us" /></div>
+      <h1>Will you be my Valentine, Henkii?</h1>
+      <div id="dialogue-box"></div>
+
+      <div class="button-container" id="button-container">
+        <button id="yes-btn" onclick="celebrate()">Yes, obviously!</button>
+        <button id="no-btn" onclick="handleNoInteraction()">No</button>
+      </div>
+
+      <div class="micro-hint">psst… try clicking “No” 😄</div>
+    </div>
+
+    <div id="final-screen">
+      <div class="scrapbook-layout">
+        <div class="side-column">
+          <div class="polaroid tl"><img src="final1.jpg" alt="1" /></div>
+          <div class="polaroid bl"><img src="final2.jpg" alt="2" /></div>
+        </div>
+
+        <div class="letter-card">
+          <span class="greeting">Hi Henkii</span>
+          It’s only been two months since we started talking, and somehow it
+          already means a lot. <br /><br />
+          Time really flew. Even if we’re not together today, it still feels
+          special —
+          <span style="color: #b58383; font-weight: bold"
+            >just knowing you’re in my life makes it special.</span
+          >
+          <br /><br />
+          I’m really glad we met, Henkii. I’m looking forward to everything
+          ahead of us — especially tomorrow. ❤️
+          <span class="signature">Dhanush</span>
+
+          <div id="counter-container">
+            It has been...
+            <span id="live-counter">Loading...</span>
+            since we first started texting - to eternity
+          </div>
+        </div>
+
+        <div class="side-column">
+          <div class="polaroid tr"><img src="final3.jpg" alt="3" /></div>
+          <div class="polaroid br"><img src="final4.jpg" alt="4" /></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* Elements */
+      const passcodeField = document.getElementById("passcode-input");
+      const lockScreen = document.getElementById("lock-screen");
+      const mainContent = document.getElementById("main-content");
+      const dialogueBox = document.getElementById("dialogue-box");
+      const noBtn = document.getElementById("no-btn");
+      const yesBtn = document.getElementById("yes-btn");
+      const music = document.getElementById("bg-music");
+      const musicControl = document.getElementById("music-control");
+      const buttonContainer = document.getElementById("button-container");
+      const pinSubnote = document.getElementById("pin-subnote");
+
+      /* Date counter */
+      const startDate = new Date("November 24, 2025 00:00:00").getTime();
+
+      /* Messages */
+      const noMessages = [
+        "Please? I just want to annoy you 🥺",
+        "Don’t you want to travel with me? :(",
+        "Let’s cook good food together… for life?",
+        "Swimming? Anytime. Come onnnn.",
+        "Fine. I’ll come offline shopping with you — buying something for me. 😄",
+        "Oh come onnn, I want to have your mom’s mutton kozhambu 🍛",
+        "Don't you wanna team up with my sis and niece to beat me, your brother and my bro in law in football? 🤪",
+        "Okay… I’m ready. You can punch me now 🥊",
+        "<strong>I surrender - I’m kidnapping you to Singapore ✈️🤍</strong>",
+      ];
+
+      /* State */
+      let noStep = 0,
+        yesScale = 1,
+        noScale = 1;
+      let noEscapeCount = 0,
+        noHasVanished = false;
+
+      /* Settings */
+      const ESCAPE_THRESHOLD = 9;
+      const ESCAPE_MARGIN = 16;
+      const ESCAPE_DISTANCE = 150;
+      const ESCAPE_COOLDOWN_MS = 180;
+      let lastEscapeAt = 0;
+
+      /* Message throttle */
+      let messageCooldown = false;
+      const MESSAGE_DELAY = 850;
+
+      /* Music */
+      function toggleMusic() {
+        if (music.paused) music.play();
+        else music.pause();
+      }
+
+      /* Counter */
+      function updateCounter() {
+        const now = Date.now(),
+          diff = now - startDate;
+        const days = Math.floor(diff / 86400000);
+        const hours = Math.floor((diff % 86400000) / 3600000);
+        const minutes = Math.floor((diff % 3600000) / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        document.getElementById("live-counter").innerHTML =
+          `${days} days, ${hours} hours, ${minutes} minutes, and ${seconds} seconds ago -`;
+      }
+
+      /* Unlock */
+      passcodeField.addEventListener("input", (e) => {
+        const v = e.target.value;
+        if (v === "0901") {
+          passcodeField.blur();
+          music.play().catch(() => {});
+          musicControl.style.display = "block";
+          // show subnote
+          pinSubnote.style.opacity = "1";
+          pinSubnote.style.transform = "translateY(0)";
+          // then fade out lock
+          setTimeout(() => {
+            lockScreen.style.opacity = "0";
+            setTimeout(() => {
+              lockScreen.style.display = "none";
+              mainContent.style.display = "block";
+              requestAnimationFrame(() => (mainContent.style.opacity = "1"));
+            }, 800);
+          }, 2000);
+        } else if (v.length === 4) {
+          passcodeField.style.borderColor = "red";
+          setTimeout(() => {
+            passcodeField.style.borderColor = "#d4a3a3";
+            passcodeField.value = "";
+          }, 400);
+        }
+      });
+
+      /* Dialogue */
+      function setDialogueSlow(text) {
+        if (messageCooldown) return;
+
+        messageCooldown = true;
+
+        dialogueBox.style.opacity = "0";
+
+        setTimeout(() => {
+          dialogueBox.innerHTML = text;
+          dialogueBox.style.opacity = "1";
+
+          // ✅ increment ONLY when message actually displayed
+          if (noStep < noMessages.length) {
+            noStep++;
+          }
+        }, 180);
+
+        setTimeout(() => {
+          messageCooldown = false;
+        }, MESSAGE_DELAY);
+      }
+
+      /* Geometry helpers */
+      function rectInContainer(el, container) {
+        const r = el.getBoundingClientRect();
+        const c = container.getBoundingClientRect();
+        return {
+          x: r.left - c.left,
+          y: r.top - c.top,
+          w: r.width,
+          h: r.height,
+        };
+      }
+      function intersects(a, b, pad = 0) {
+        return !(
+          a.x + a.w + pad < b.x ||
+          a.x > b.x + b.w + pad ||
+          a.y + a.h + pad < b.y ||
+          a.y > b.y + b.h + pad
+        );
+      }
+
+      /* NO button interactions (mobile/touch click) */
+      function handleNoInteraction() {
+        if (noHasVanished) return;
+        if (noStep < noMessages.length) {
+          setDialogueSlow(noMessages[noStep]);
+
+          if (yesScale < 2.5) yesScale += 0.3;
+          yesBtn.style.transform = `scale(${yesScale})`;
+          yesBtn.classList.add("yes-glow");
+
+          noScale -= 0.1;
+          noBtn.style.transform = `scale(${Math.max(noScale, 0.5)})`;
+
+          fleeToRandomSpotFar(true);
+        } else {
+          vanishNoButton();
+        }
+      }
+
+      /* Desktop escape logic */
+      function enableMouseEscape() {
+        buttonContainer.addEventListener("mousemove", (evt) => {
+          if (noHasVanished) return;
+          const now = Date.now();
+          if (now - lastEscapeAt < ESCAPE_COOLDOWN_MS) return;
+
+          const rect = buttonContainer.getBoundingClientRect();
+          const mouseX = evt.clientX - rect.left;
+          const mouseY = evt.clientY - rect.top;
+
+          const nb = rectInContainer(noBtn, buttonContainer);
+          const btnX = nb.x + nb.w / 2,
+            btnY = nb.y + nb.h / 2;
+          const dx = mouseX - btnX,
+            dy = mouseY - btnY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < ESCAPE_DISTANCE) {
+            lastEscapeAt = now;
+            bumpDialogueAndYesSlow();
+            escapeAwayFrom(mouseX, mouseY);
+            noEscapeCount++;
+            if (noStep >= noMessages.length) {
+              setTimeout(() => {
+                vanishNoButton();
+              }, 1000);
+            }
+          }
+        });
+
+        noBtn.addEventListener("mouseenter", () => {
+          if (noHasVanished) return;
+          bumpDialogueAndYesSlow();
+          fleeToRandomSpotFar(false);
+          noEscapeCount++;
+          if (noStep >= noMessages.length) {
+            setTimeout(() => {
+              vanishNoButton();
+            }, 1000);
+          }
+        });
+      }
+
+      function bumpDialogueAndYesSlow() {
+        if (noHasVanished) return;
+
+        if (noStep < noMessages.length) {
+          setDialogueSlow(noMessages[noStep]); // noStep increments inside setDialogueSlow
+        } else {
+          setDialogueSlow(noMessages[noMessages.length - 1]);
+        }
+
+        if (yesScale < 2.8) yesScale += 0.12;
+        yesBtn.style.transform = `scale(${yesScale})`;
+        yesBtn.classList.add("yes-glow");
+
+        noScale -= 0.04;
+        noBtn.style.transform = `scale(${Math.max(noScale, 0.55)})`;
+      }
+
+      /* Move NO far (with collision avoidance vs YES) */
+      function fleeToRandomSpotFar(forceRecalcYes) {
+        const rect = buttonContainer.getBoundingClientRect();
+        const w = noBtn.offsetWidth || 80;
+        const h = noBtn.offsetHeight || 40;
+
+        const maxX = rect.width - w - ESCAPE_MARGIN;
+        const maxY = rect.height - h - ESCAPE_MARGIN;
+
+        const cur = rectInContainer(noBtn, buttonContainer);
+        const MIN_DELTA = 140;
+
+        // YES rect (always recompute; scale changes)
+        const yes = rectInContainer(yesBtn, buttonContainer);
+        const yesPad = 14;
+
+        let x = ESCAPE_MARGIN,
+          y = ESCAPE_MARGIN,
+          attempts = 0;
+        do {
+          x = ESCAPE_MARGIN + Math.random() * Math.max(maxX, 10);
+          y = ESCAPE_MARGIN + Math.random() * Math.max(maxY, 10);
+          attempts++;
+          const candidate = { x, y, w, h };
+          const tooClose =
+            Math.abs(x - cur.x) < MIN_DELTA && Math.abs(y - cur.y) < MIN_DELTA;
+          const overlaps = intersects(candidate, yes, yesPad);
+          if (!tooClose && !overlaps) break;
+        } while (attempts < 20);
+
+        // clamp (safety)
+        x = Math.min(Math.max(x, ESCAPE_MARGIN), maxX);
+        y = Math.min(Math.max(y, ESCAPE_MARGIN), maxY);
+
+        noBtn.style.left = `${x}px`;
+        noBtn.style.top = `${y}px`;
+      }
+
+      /* Escape away from cursor (then collision-check + fallback) */
+      function escapeAwayFrom(mouseX, mouseY) {
+        const rect = buttonContainer.getBoundingClientRect();
+        const w = noBtn.offsetWidth,
+          h = noBtn.offsetHeight;
+        const cur = rectInContainer(noBtn, buttonContainer);
+
+        const dirX = cur.x + w / 2 - mouseX;
+        const dirY = cur.y + h / 2 - mouseY;
+        const len = Math.sqrt(dirX * dirX + dirY * dirY) || 1;
+        const nx = dirX / len,
+          ny = dirY / len;
+
+        const jump = 260 + Math.random() * 140;
+        let newX = cur.x + nx * jump;
+        let newY = cur.y + ny * jump;
+
+        const minX = ESCAPE_MARGIN,
+          minY = ESCAPE_MARGIN;
+        const maxX = rect.width - w - ESCAPE_MARGIN;
+        const maxY = rect.height - h - ESCAPE_MARGIN;
+
+        newX = Math.min(Math.max(newX, minX), maxX);
+        newY = Math.min(Math.max(newY, minY), maxY);
+
+        const yes = rectInContainer(yesBtn, buttonContainer);
+        const yesPad = 14;
+        const candidate = { x: newX, y: newY, w, h };
+
+        // if we got clamped hard OR overlaps YES → fallback to far random
+        const stuck =
+          newX === minX || newX === maxX || newY === minY || newY === maxY;
+        const overlaps = intersects(candidate, yes, yesPad);
+        if (stuck || overlaps) {
+          fleeToRandomSpotFar(false);
+          return;
+        }
+
+        noBtn.style.left = `${newX}px`;
+        noBtn.style.top = `${newY}px`;
+      }
+
+      function vanishNoButton() {
+        if (noHasVanished) return;
+        noHasVanished = true;
+        noBtn.classList.add("no-vanish");
+        setTimeout(() => {
+          noBtn.style.display = "none";
+        }, 650);
+      }
+
+      /* YES celebrate */
+      function celebrate() {
+        mainContent.style.opacity = "0";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        setInterval(updateCounter, 1000);
+        updateCounter();
+
+        setTimeout(() => {
+          document.getElementById("final-screen").style.display = "block";
+          mainContent.style.display = "none";
+          requestAnimationFrame(
+            () => (document.getElementById("final-screen").style.opacity = "1"),
+          );
+          startConfetti();
+        }, 1000);
+      }
+
+      /* Hearts */
+      function createHeart() {
+        const heart = document.createElement("div");
+        heart.innerHTML = "❤";
+        heart.style.position = "fixed";
+        heart.style.left = Math.random() * 100 + "vw";
+        heart.style.top = "100vh";
+        heart.style.fontSize = Math.random() * 15 + 10 + "px";
+        heart.style.color = "rgba(212,163,163,0.2)";
+        heart.style.zIndex = "-1";
+        document.body.appendChild(heart);
+        heart.animate(
+          [
+            { transform: "translateY(0)" },
+            { transform: "translateY(-110vh) rotate(360deg)" },
+          ],
+          { duration: 6000 + Math.random() * 3000 },
+        );
+        setTimeout(() => heart.remove(), 9000);
+      }
+      setInterval(createHeart, 1000);
+
+      /* Confetti */
+      function startConfetti() {
+        for (let i = 0; i < 80; i++) {
+          setTimeout(() => {
+            const c = document.createElement("div");
+            c.style.position = "fixed";
+            c.style.width = "8px";
+            c.style.height = "8px";
+            c.style.backgroundColor = ["#d4a3a3", "#e8d3d3", "#ffd1d1"][
+              Math.floor(Math.random() * 3)
+            ];
+            c.style.left = Math.random() * 100 + "vw";
+            c.style.top = "-10px";
+            document.body.appendChild(c);
+            c.animate(
+              [
+                { transform: "translateY(0)", opacity: 1 },
+                {
+                  transform: `translateY(${window.innerHeight}px) rotate(720deg)`,
+                  opacity: 0,
+                },
+              ],
+              { duration: 3000 },
+            );
+            setTimeout(() => c.remove(), 3000);
+          }, i * 30);
+        }
+      }
+
+      /* Init NO position + escape */
+      function initNoButtonPosition() {
+        const rect = buttonContainer.getBoundingClientRect();
+        const w = noBtn.offsetWidth || 80;
+        const h = noBtn.offsetHeight || 40;
+        const x = Math.min(rect.width - w - 20, rect.width * 0.7);
+        const y = Math.min(rect.height - h - 20, rect.height * 0.45);
+        noBtn.style.left = `${Math.max(20, x)}px`;
+        noBtn.style.top = `${Math.max(20, y)}px`;
+      }
+      window.addEventListener("load", () => {
+        initNoButtonPosition();
+        enableMouseEscape();
+      });
+    </script>
+  </body>
+</html>
